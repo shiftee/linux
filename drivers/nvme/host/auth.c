@@ -760,6 +760,7 @@ static void nvme_queue_auth_work(struct work_struct *work)
 	ret = nvme_auth_dhchap_setup_host_response(ctrl, chap);
 	mutex_unlock(&ctrl->dhchap_auth_mutex);
 	if (ret) {
+		chap->status = NVME_AUTH_DHCHAP_FAILURE_FAILED;
 		chap->error = ret;
 		goto fail2;
 	}
@@ -776,6 +777,7 @@ static void nvme_queue_auth_work(struct work_struct *work)
 	tl = ret;
 	ret = nvme_auth_submit(ctrl, chap->qid, chap->buf, tl, true);
 	if (ret) {
+		chap->status = NVME_AUTH_DHCHAP_FAILURE_FAILED;
 		chap->error = ret;
 		goto fail2;
 	}
@@ -811,6 +813,7 @@ static void nvme_queue_auth_work(struct work_struct *work)
 		ret = nvme_auth_dhchap_setup_ctrl_response(ctrl, chap);
 		if (ret) {
 			mutex_unlock(&ctrl->dhchap_auth_mutex);
+			chap->status = NVME_AUTH_DHCHAP_FAILURE_FAILED;
 			chap->error = ret;
 			goto fail2;
 		}
@@ -830,8 +833,10 @@ static void nvme_queue_auth_work(struct work_struct *work)
 			__func__, chap->qid);
 		tl = nvme_auth_set_dhchap_success2_data(ctrl, chap);
 		ret = nvme_auth_submit(ctrl, chap->qid, chap->buf, tl, true);
-		if (ret)
+		if (ret) {
+			chap->status = NVME_AUTH_DHCHAP_FAILURE_FAILED;
 			chap->error = ret;
+		}
 	}
 	if (!ret) {
 		chap->error = 0;
