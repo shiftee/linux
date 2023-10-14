@@ -40,6 +40,7 @@ struct nvme_dhchap_queue_context {
 	u8 *ctrl_key;
 	u8 *host_key;
 	u8 *sess_key;
+	int host_response_len;
 	int ctrl_key_len;
 	int host_key_len;
 	int sess_key_len;
@@ -430,10 +431,12 @@ static int nvme_auth_dhchap_setup_host_response(struct nvme_ctrl *ctrl,
 
 	if (!chap->host_response) {
 		chap->host_response = nvme_auth_transform_key(ctrl->host_key,
-						ctrl->opts->host->nqn);
+						ctrl->opts->host->nqn,
+						&chap->host_response_len);
 		if (IS_ERR(chap->host_response)) {
 			ret = PTR_ERR(chap->host_response);
 			chap->host_response = NULL;
+			chap->host_response_len = 0;
 			return ret;
 		}
 	} else {
@@ -442,7 +445,7 @@ static int nvme_auth_dhchap_setup_host_response(struct nvme_ctrl *ctrl,
 	}
 
 	ret = crypto_shash_setkey(chap->shash_tfm,
-			chap->host_response, ctrl->host_key->len);
+			chap->host_response, chap->host_response_len);
 	if (ret) {
 		dev_warn(ctrl->device, "qid %d: failed to set key, error %d\n",
 			 chap->qid, ret);
