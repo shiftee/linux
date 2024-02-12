@@ -830,8 +830,8 @@ static const struct dwxgmac3_error_desc dwxgmac3_dma_errors[32]= {
 	{ false, "UNKNOWN", "Unknown Error" }, /* 31 */
 };
 
-static const char * const dpp_rx_err = "Read Rx Descriptor Parity checker Error";
-static const char * const dpp_tx_err = "Read Tx Descriptor Parity checker Error";
+#define dpp_rx_err "Read Rx Descriptor Parity checker Error"
+#define dpp_tx_err "Read Tx Descriptor Parity checker Error"
 static const struct dwxgmac3_error_desc dwxgmac3_dma_dpp_errors[32] = {
 	{ true, "TDPES0", dpp_tx_err },
 	{ true, "TDPES1", dpp_tx_err },
